@@ -28,7 +28,9 @@ Tenés seis tareas:
     *  [Entrada de Blog (en español)](https://www.paradigmadigital.com/dev/nos-espera-junit-5/)
 * Maven 3.3 o superior
  
+### Resolución
 
-  
-
-
+#### Smells detectados
+* Type Check en Movimiento: Siempre voy a necesitar saber si es un depósito o una extracción. La solución propuesta es modelar dichas entidades por separado, que compartan una misma interfaz
+* El movimiento conoce a la Cuenta y la Cuenta al movimiento. Una de las dos es innecesaria y complica la interfaz. La cuenta sabe cómo agregar un movimiento, ya sea depósito o extracción, y el movimiento envía a la cuenta el mensaje de agregarse (sin enviarse a sí mismo! -usando this-) y además _setea_ el saldo (ver siguiente). Por todo esto, decidí que lo mejor es eliminar el conocimiento de la Cuenta en el Movimiento.
+* El Saldo puede *setearse* por fuera de los mensajes de poner y sacar dinero, esto rompe con el encapsulamiento y además deja la clase en un estado inválido, en el cual el saldo no se condice con los movimientos (trazabilidad deseable). La solución propuesta es dejar el saldo a modo de _cache_, para no tener que calcularlo cada vez que preguntan por el saldo.
