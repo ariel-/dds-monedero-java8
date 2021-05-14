@@ -12,7 +12,7 @@ import java.util.List;
 public class Cuenta {
 
   private double saldo = 0;
-  private List<Movimiento> movimientos = new ArrayList<>();
+  private final List<Movimiento> movimientos = new ArrayList<>();
 
   public Cuenta() {
     saldo = 0;
@@ -20,10 +20,6 @@ public class Cuenta {
 
   public Cuenta(double montoInicial) {
     saldo = montoInicial;
-  }
-
-  public void setMovimientos(List<Movimiento> movimientos) {
-    this.movimientos = movimientos;
   }
 
   public void poner(double cuanto) {
