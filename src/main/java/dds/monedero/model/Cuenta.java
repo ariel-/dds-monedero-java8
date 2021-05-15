@@ -83,13 +83,13 @@ public class Cuenta {
 
   private long getCantidadDepositosDiarios(LocalDate fecha) {
     return movimientos.stream()
-                      .filter(movimiento -> movimiento.isDeposito() && movimiento.esDeLaFecha(fecha))
+                      .filter(movimiento -> movimiento.fueDepositado(fecha))
                       .count();
   }
 
   private double getMontoExtraidoA(LocalDate fecha) {
     return movimientos.stream()
-                      .filter(movimiento -> !movimiento.isDeposito() && movimiento.esDeLaFecha(fecha))
+                      .filter(movimiento -> movimiento.fueExtraido(fecha))
                       .mapToDouble(Movimiento::getMonto)
                       .sum();
   }
