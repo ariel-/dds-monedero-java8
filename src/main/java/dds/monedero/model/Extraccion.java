@@ -13,7 +13,12 @@ public class Extraccion extends Movimiento {
   }
 
   @Override
-  public boolean isDeposito() {
+  public boolean fueDepositado(LocalDate fecha) {
     return false;
+  }
+
+  @Override
+  public boolean fueExtraido(LocalDate fecha) {
+    return esDeLaFecha(fecha);
   }
 }

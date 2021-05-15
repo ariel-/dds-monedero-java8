@@ -22,23 +22,13 @@ public abstract class Movimiento {
     return fecha;
   }
 
-  public boolean fueDepositado(LocalDate fecha) {
-    return isDeposito() && esDeLaFecha(fecha);
-  }
+  public abstract boolean fueDepositado(LocalDate fecha);
 
-  public boolean fueExtraido(LocalDate fecha) {
-    return isExtraccion() && esDeLaFecha(fecha);
-  }
+  public abstract boolean fueExtraido(LocalDate fecha);
 
   public boolean esDeLaFecha(LocalDate fecha) {
     return this.fecha.equals(fecha);
   }
 
   public abstract double modificarSaldo(double saldo);
-
-  public abstract boolean isDeposito();
-
-  public boolean isExtraccion() {
-    return !isDeposito();
-  }
 }
