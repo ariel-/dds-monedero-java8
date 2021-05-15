@@ -31,12 +31,6 @@ public class Cuenta {
     this.maximoExtraccionDiaria = maximoExtraccionDiaria;
   }
 
-  void hacerOperacion(double cuanto, Supplier<Movimiento> validarYObtenerMovimiento) {
-    validarMontoPositivo(cuanto);
-    Movimiento movimiento = validarYObtenerMovimiento.get();
-    agregarMovimiento(movimiento);
-  }
-
   public void poner(double cuanto) {
     hacerOperacion(cuanto, () ->
     {
@@ -54,6 +48,20 @@ public class Cuenta {
     });
   }
 
+  public List<Movimiento> getMovimientos() {
+    return movimientos;
+  }
+
+  public double getSaldo() {
+    return saldo;
+  }
+
+  private void hacerOperacion(double cuanto, Supplier<Movimiento> validarYObtenerMovimiento) {
+    validarMontoPositivo(cuanto);
+    Movimiento movimiento = validarYObtenerMovimiento.get();
+    agregarMovimiento(movimiento);
+  }
+
   private void validarMaximoDepositos() {
     if (getCantidadDepositosDiarios(LocalDate.now()) >= maximoDepositosDiarios)
       throw new MaximaCantidadDepositosException("Ya excedio los " + maximoDepositosDiarios + " depositos diarios");
@@ -63,7 +71,6 @@ public class Cuenta {
     if (cuanto <= 0)
       throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
   }
-
 
   private void validarLimite(double cuanto) {
     double limite = maximoExtraccionDiaria - getMontoExtraidoA(LocalDate.now());
@@ -92,13 +99,5 @@ public class Cuenta {
                       .filter(movimiento -> movimiento.fueExtraido(fecha))
                       .mapToDouble(Movimiento::getMonto)
                       .sum();
-  }
-
-  public List<Movimiento> getMovimientos() {
-    return movimientos;
-  }
-
-  public double getSaldo() {
-    return saldo;
   }
 }
