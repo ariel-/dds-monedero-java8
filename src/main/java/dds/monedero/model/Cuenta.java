@@ -8,13 +8,14 @@ import dds.monedero.exceptions.SaldoMenorException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class Cuenta {
 
+  private final List<Movimiento> movimientos = new ArrayList<>();
   private int maximoDepositosDiarios = 3;
   private double maximoExtraccionDiaria = 1000;
   private double saldo = 0;
-  private final List<Movimiento> movimientos = new ArrayList<>();
 
   public Cuenta() {
     saldo = 0;
@@ -30,33 +31,49 @@ public class Cuenta {
     this.maximoExtraccionDiaria = maximoExtraccionDiaria;
   }
 
-  public void poner(double cuanto) {
-    validarDeposito(cuanto);
-    agregarMovimiento(new Deposito(LocalDate.now(), cuanto));
+  void hacerOperacion(double cuanto, Supplier<Movimiento> validarYObtenerMovimiento) {
+    validarMontoPositivo(cuanto);
+    Movimiento movimiento = validarYObtenerMovimiento.get();
+    agregarMovimiento(movimiento);
   }
 
-  private void validarDeposito(double cuanto) {
-    if (cuanto <= 0)
-      throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
+  public void poner(double cuanto) {
+    hacerOperacion(cuanto, () ->
+    {
+      validarMaximoDepositos();
+      return new Deposito(LocalDate.now(), cuanto);
+    });
+  }
 
+  public void sacar(double cuanto) {
+    hacerOperacion(cuanto, () ->
+    {
+      validarSaldoRestante(cuanto);
+      validarLimite(cuanto);
+      return new Extraccion(LocalDate.now(), cuanto);
+    });
+  }
+
+  private void validarMaximoDepositos() {
     if (getCantidadDepositosDiarios(LocalDate.now()) >= maximoDepositosDiarios)
       throw new MaximaCantidadDepositosException("Ya excedio los " + maximoDepositosDiarios + " depositos diarios");
   }
 
-  public void sacar(double cuanto) {
-    validarExtraccion(cuanto);
-    agregarMovimiento(new Extraccion(LocalDate.now(), cuanto));
-  }
-
-  private void validarExtraccion(double cuanto) {
+  private void validarMontoPositivo(double cuanto) {
     if (cuanto <= 0)
       throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
-    if (cuanto > saldo)
-      throw new SaldoMenorException("No puede sacar mas de " + getSaldo() + " $");
-    double montoExtraidoHoy = getMontoExtraidoA(LocalDate.now());
-    double limite = maximoExtraccionDiaria - montoExtraidoHoy;
+  }
+
+
+  private void validarLimite(double cuanto) {
+    double limite = maximoExtraccionDiaria - getMontoExtraidoA(LocalDate.now());
     if (cuanto > limite)
       throw new MaximoExtraccionDiarioException("No puede extraer mas de $ " + maximoExtraccionDiaria + " diarios, límite: " + limite);
+  }
+
+  private void validarSaldoRestante(double cuanto) {
+    if (cuanto > saldo)
+      throw new SaldoMenorException("No puede sacar mas de " + getSaldo() + " $");
   }
 
   private void agregarMovimiento(Movimiento movimiento) {
@@ -66,15 +83,15 @@ public class Cuenta {
 
   private long getCantidadDepositosDiarios(LocalDate fecha) {
     return movimientos.stream()
-        .filter(movimiento -> movimiento.isDeposito() && movimiento.esDeLaFecha(fecha))
-        .count();
+                      .filter(movimiento -> movimiento.isDeposito() && movimiento.esDeLaFecha(fecha))
+                      .count();
   }
 
   private double getMontoExtraidoA(LocalDate fecha) {
     return movimientos.stream()
-        .filter(movimiento -> !movimiento.isDeposito() && movimiento.esDeLaFecha(fecha))
-        .mapToDouble(Movimiento::getMonto)
-        .sum();
+                      .filter(movimiento -> !movimiento.isDeposito() && movimiento.esDeLaFecha(fecha))
+                      .mapToDouble(Movimiento::getMonto)
+                      .sum();
   }
 
   public List<Movimiento> getMovimientos() {
